@@ -33,7 +33,7 @@ export default function App() {
 
     try {
       const result = await uploadData({
-        key: `uploads/${selectedFile.name}`,
+        key: 'uploads/${selectedFile.name}',
         data: selectedFile,
         options: {
           contentType: selectedFile.type,
@@ -44,7 +44,7 @@ export default function App() {
 
       // Obtener la URL del archivo subido
       const { url } = await getUrl({
-        key: `uploads/${selectedFile.name}`,
+        key: 'uploads/${selectedFile.name}',
       });
 
       // Convertir la URL a string antes de guardarla en el estado
