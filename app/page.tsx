@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateClient } from "aws-amplify/data";
 import { uploadData, getUrl } from 'aws-amplify/storage';
 import type { Schema } from "@/amplify/data/resource";
@@ -10,41 +10,42 @@ import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { Authenticator } from '@aws-amplify/ui-react';
 
+import { FileUploader } from '@aws-amplify/ui-react-storage';
+import '@aws-amplify/ui-react/styles.css';
+
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
+
 export default function App() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>("");
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
     }
   };
 
-  const handleFileUpload = async () => {
-    if (!selectedFile) {
+  const handleUpload = async () => {
+    if (!file) {
       alert('Por favor selecciona un archivo primero');
       return;
     }
 
     try {
       const result = await uploadData({
-        key: 'uploads/${selectedFile.name}',
-        data: selectedFile,
-        options: {
-          contentType: selectedFile.type,
-        }
-      }).result;
+        path: 'uploads/sguisao',
+        data: file
+      });
 
       console.log('Archivo subido exitosamente:', result);
 
       // Obtener la URL del archivo subido
       const { url } = await getUrl({
-        key: 'uploads/${selectedFile.name}',
+        key: 'uploads/sguisao',
       });
 
       // Convertir la URL a string antes de guardarla en el estado
@@ -58,23 +59,21 @@ export default function App() {
     <Authenticator>
       {({ signOut, user }) => (
         <main>
-          <div>
-            <h2>Subir Archivo</h2>
-            <input
-              type="file"
-              onChange={handleFileSelect}
-            />
-            <button onClick={handleFileUpload}>
-              Subir a S3
-            </button>
-            {uploadedFileUrl && (
-              <p>
-                Archivo subido: <a href={uploadedFileUrl} target="_blank" rel="noopener noreferrer">Ver archivo</a>
-              </p>
-            )}
+
+          <div style={{ marginTop: '20px' }}>
+            <h2>Subir archivo</h2>
+            <input type="file" onChange={handleFileSelect} />
+            <button onClick={handleUpload}>Upload</button>
           </div>
 
-          <button onClick={signOut}>Cerrar sesión</button>
+          <button onClick={signOut} style={{ marginTop: '20px' }} >Cerrar sesión</button>
+
+          {/* Mostrar URL del archivo subido si está disponible */}
+          {uploadedFileUrl && (
+            <div>
+              <p>Archivo subido: <a href={uploadedFileUrl} target="_blank" rel="noopener noreferrer">{uploadedFileUrl}</a></p>
+            </div>
+          )}
         </main>
       )}
     </Authenticator>
